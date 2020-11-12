@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.file";
+option java_outer_classname = "FileProto";
+option objc_class_prefix = "fsw";
+
+package file;
+
+
+// python3 -m grpc_tools.protoc --proto_path=./proto --python_out=./pb --grpc_python_out=./pb ./proto/central.proto
+
+service FileServer {
+    rpc LS (Request) returns (Files) {};
+    rpc CAT (Request) returns (Response) {};
+    rpc CP (CPReq) returns (Response) {};
+    rpc PWD (Request) returns (Response) {};
+    rpc NEW (CPReq) returns (Response) {};
+}
+
+
+message CPReq {
+    string file1 = 1;
+    string file2 = 2;
+}
+
+message Request {
+    string name = 1;
+}
+
+message Response {
+    string name = 1;
+}
+
+message Files {
+    message name {
+        string n = 1;
+    }
+    repeated name file = 1;
+}

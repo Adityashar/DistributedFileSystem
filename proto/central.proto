@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.central";
+option java_outer_classname = "CentralProto";
+option objc_class_prefix = "CNT";
+
+package central;
+
+
+// python3 -m grpc_tools.protoc --proto_path=./proto --python_out=./pb --grpc_python_out=./pb ./proto/central.proto
+
+// Our central proto will offer 3 services
+// defining two right now
+// The first service : Tell the FSs which are active
+// The second service : Broadcast a file creation message to all clients
+
+service Central {
+	rpc GiveFS (Request) returns (Response) {}
+}
+
+// S1 REQUEST - a string for a client
+message Request {
+	string name = 1;
+}
+
+// S1 RESPONSE - an int: port, an id for FS
+message Response {
+	message Fs {
+		string port = 1;
+		string id = 2;
+	}
+    repeated Fs serv = 1;
+    int32 num = 2;
+}
+
