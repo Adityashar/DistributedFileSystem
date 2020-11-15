@@ -24,7 +24,12 @@ class CentralStub(object):
         self.GiveFS = channel.unary_unary(
                 '/central.Central/GiveFS',
                 request_serializer=central__pb2.Request.SerializeToString,
-                response_deserializer=central__pb2.Response.FromString,
+                response_deserializer=central__pb2.Response2.FromString,
+                )
+        self.Registration = channel.unary_unary(
+                '/central.Central/Registration',
+                request_serializer=central__pb2.Request.SerializeToString,
+                response_deserializer=central__pb2.Response2.FromString,
                 )
 
 
@@ -44,13 +49,24 @@ class CentralServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Registration(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_CentralServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GiveFS': grpc.unary_unary_rpc_method_handler(
                     servicer.GiveFS,
                     request_deserializer=central__pb2.Request.FromString,
-                    response_serializer=central__pb2.Response.SerializeToString,
+                    response_serializer=central__pb2.Response2.SerializeToString,
+            ),
+            'Registration': grpc.unary_unary_rpc_method_handler(
+                    servicer.Registration,
+                    request_deserializer=central__pb2.Request.FromString,
+                    response_serializer=central__pb2.Response2.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -82,6 +98,23 @@ class Central(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/central.Central/GiveFS',
             central__pb2.Request.SerializeToString,
-            central__pb2.Response.FromString,
+            central__pb2.Response2.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Registration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/central.Central/Registration',
+            central__pb2.Request.SerializeToString,
+            central__pb2.Response2.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
