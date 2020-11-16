@@ -101,7 +101,7 @@ class Central(central_grpc.CentralServicer):
     def NewFile(self, request, context):
         fileserver, filename = request.name.split()
         fernet = Fernet(self.fs_keys[fileserver])
-        filename, pid = fernet.decrypt(filename.encode()).decode()
+        filename, pid = fernet.decrypt(filename.encode()).decode().split()
 
         print("New File {} has been created in FileServer {} by client with pid {}.".format(filename, fileserver, pid))
 
@@ -112,7 +112,6 @@ class Central(central_grpc.CentralServicer):
         return centralpb.Response2(name = "")
 
     def GetUpdate(self, request, context):
-        print("Sent a Notification to {} about new files created.".format(request.name))
         pid = request.name
         fernet = Fernet(self.client_keys[pid])
         plaintext = ""
@@ -121,6 +120,8 @@ class Central(central_grpc.CentralServicer):
         
         if len(plaintext) > 0:
             plaintext = plaintext[:-1]
+            print("Sent a Notification to {} about new files created.".format(request.name))
+            self.client_notification[pid] = []
         ciphertext = fernet.encrypt(plaintext.encode()).decode()
 
         return centralpb.Response2(name = ciphertext)

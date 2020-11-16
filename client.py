@@ -73,10 +73,13 @@ def doTask(task, serverName, id, shared_key):
         filenme = input()
         ciphertext = fernet.encrypt((filenme).encode()).decode()
         response = stub.CAT(filepb.Request(name = ciphertext))
-
-        print("\nThe contents of the given file are: \n")
         plaintext = fernet.decrypt(response.name.encode()).decode()
-        print(plaintext)
+
+        if plaintext == 'N':
+            print("File not exists !")
+        else:
+            print("\nThe contents of the given file are: \n")
+            print(plaintext)
 
     elif task == 'cp':
         print("Enter the two file names: ")
@@ -87,7 +90,10 @@ def doTask(task, serverName, id, shared_key):
         ciphertext = fernet.encrypt((f1 + " " + f2).encode()).decode()
         response = stub.CP(filepb.Request(name = ciphertext))
         plaintext = fernet.decrypt(response.name.encode()).decode()
-        print("\nThe Request has been processed. The new content of {} is :\n\n{}".format(f2, plaintext))
+        if plaintext == 'N':
+            print("File not exists !")
+        else:
+            print("\nThe Request has been processed. The new content of {} is :\n\n{}".format(f2, plaintext))
 
     elif task == 'pwd':
         response = stub.PWD(filepb.Request(name = ""))
@@ -178,10 +184,10 @@ def checkCenter(key, pid):
     if len(plaintext) == 0:
         return 
     
-    print("The following files have been added : FileName[FileServer]\n")
+    print("\nThe following files have been added : FileName[FileServer]\n")
     plaintext = plaintext.split()
     for i,p in enumerate(plaintext):
-        print (i, ") ", p)
+        print ("  ", i+1, ") ", p)
     return    
 
 
@@ -203,7 +209,7 @@ if __name__ == '__main__':
     print("1. ls - list files in given FS\n2. cp - copy content of one file to another\n3. cat - Display contents of given file\n4. pwd - show current directory\n5. new - add a new file")
     print()
 
-    Task = ['ls', 'cp', 'cat', 'pwd']
+    Task = ['ls', 'cp', 'cat', 'pwd', 'new']
     cur_task = (input()).lower()
     stop = 0
 
@@ -214,7 +220,7 @@ if __name__ == '__main__':
         else:
             print("Wrong input.")
 
-        checkCenter(client_kdc)
+        checkCenter(client_kdc, str(id))
         print("\nSelect another service. (N for none)  :  ", end = "")
         cur_task = (input()).lower()
 

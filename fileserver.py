@@ -73,13 +73,16 @@ class FileServer(filepb_grpc.FileServerServicer):
         file1, file2 = fernet.decrypt(request.name.encode()).decode().split(" ")
         self.sessionCount += 1
         print("   {}) CP request from Client with PID {}.".format(self.sessionCount, self.session[0]))
-        with open(os.path.join(self.directory, file1), 'r') as f:
-            content = f.read()
-        with open(os.path.join(self.directory, file2), 'a') as f:
-            f.write("\n" + content)
-        with open(os.path.join(self.directory, file2), 'r') as f:
-            content = f.read()
 
+        if os.path.isfile(os.path.join(self.directory, file1)) == 1 :#and os.path.isfile(os.path.join(self.directory, file2)) == 1:
+            with open(os.path.join(self.directory, file1), 'r') as f:
+                content = f.read()
+            with open(os.path.join(self.directory, file2), 'a') as f:
+                f.write("\n" + content)
+            with open(os.path.join(self.directory, file2), 'r') as f:
+                content = f.read()
+        else:
+            content = "N"
         content = fernet.encrypt((content).encode()).decode()
         return filepb.Response(name = content)
     
@@ -88,9 +91,11 @@ class FileServer(filepb_grpc.FileServerServicer):
         self.sessionCount += 1
         print("   {}) CAT request from Client with PID {}.".format(self.sessionCount, self.session[0]))
         plaintext = fernet.decrypt(request.name.encode()).decode()
-        with open(os.path.join(self.directory, plaintext), 'r') as f:
-            content = f.read()
-
+        if os.path.isfile(os.path.join(self.directory, plaintext)) == 1:
+            with open(os.path.join(self.directory, plaintext), 'r') as f:
+                content = f.read()
+        else : 
+            content = "N"
         ciphertext = fernet.encrypt((content).encode()).decode()
         return filepb.Response(name = ciphertext)
     
@@ -118,7 +123,7 @@ class FileServer(filepb_grpc.FileServerServicer):
         content = "File has been created by client with PID " + self.session[0]
         with open(os.path.join(self.directory, plaintext), 'w') as f:
             f.write(content)
-        print("   {}) NEW request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        print("   {}) NEW request from Client with PID {}. Submitted the update to Central Server.".format(self.sessionCount, self.session[0]))
         ciphertext = fernet.encrypt((content).encode()).decode()
         return filepb.Response(name = ciphertext)
     
