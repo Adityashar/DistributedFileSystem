@@ -13,6 +13,7 @@ class Central(central_grpc.CentralServicer):
         self.public_key = key
         self.client_keys = {}
         self.fs_keys = {}
+        self.client_notification = {}
 
     def Decrypt(self, content):
         fernet = Fernet(self.public_key)
@@ -66,6 +67,7 @@ class Central(central_grpc.CentralServicer):
             res = self.Encrypt(str(int(items[1])-1), 0, items[0])
         else:
             self.client_keys[items[0]] = items[2].encode()
+            self.client_notification[items[0]] = []
             print("Received a request for Registration by client with PID {}.\nSent a response to the client.\n".format(items[0]))
             res = self.Encrypt(str(int(items[1])-1), 1, items[0])
         
@@ -95,7 +97,33 @@ class Central(central_grpc.CentralServicer):
         print("\nReceived a Session Establishment Request from client with pid {} for FileServer {}.\nSent a Ticket and generated a Session-Key for the same.\n".format(pid, fs))
 
         return centralpb.Response2(name = ciphertext)
+    
+    def NewFile(self, request, context):
+        fileserver, filename = request.name.split()
+        fernet = Fernet(self.fs_keys[fileserver])
+        filename, pid = fernet.decrypt(filename.encode()).decode()
 
+        print("New File {} has been created in FileServer {} by client with pid {}.".format(filename, fileserver, pid))
+
+        for k in self.client_notification.keys():
+            if pid != k:
+                self.client_notification[k].append((filename, fileserver))
+
+        return centralpb.Response2(name = "")
+
+    def GetUpdate(self, request, context):
+        print("Sent a Notification to {} about new files created.".format(request.name))
+        pid = request.name
+        fernet = Fernet(self.client_keys[pid])
+        plaintext = ""
+        for u in self.client_notification[pid] : 
+            plaintext += "{}[{}] ".format(u[0], u[1])
+        
+        if len(plaintext) > 0:
+            plaintext = plaintext[:-1]
+        ciphertext = fernet.encrypt(plaintext.encode()).decode()
+
+        return centralpb.Response2(name = ciphertext)
 
 def serve():
 

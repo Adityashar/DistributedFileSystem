@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\030io.grpc.examples.centralB\014CentralProtoP\001\242\002\003CNT',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rcentral.proto\x12\x07\x63\x65ntral\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x19\n\tResponse2\x12\x0c\n\x04name\x18\x01 \x01(\t\"[\n\x08Response\x12\"\n\x04serv\x18\x01 \x03(\x0b\x32\x14.central.Response.Fs\x12\x0b\n\x03num\x18\x02 \x01(\x05\x1a\x1e\n\x02\x46s\x12\x0c\n\x04port\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t2\xa5\x01\n\x07\x43\x65ntral\x12\x30\n\x06GiveFS\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x12\x36\n\x0cRegistration\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x12\x30\n\x06GenKey\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x42\x30\n\x18io.grpc.examples.centralB\x0c\x43\x65ntralProtoP\x01\xa2\x02\x03\x43NTb\x06proto3'
+  serialized_pb=b'\n\rcentral.proto\x12\x07\x63\x65ntral\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x19\n\tResponse2\x12\x0c\n\x04name\x18\x01 \x01(\t\"[\n\x08Response\x12\"\n\x04serv\x18\x01 \x03(\x0b\x32\x14.central.Response.Fs\x12\x0b\n\x03num\x18\x02 \x01(\x05\x1a\x1e\n\x02\x46s\x12\x0c\n\x04port\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t2\x8d\x02\n\x07\x43\x65ntral\x12\x30\n\x06GiveFS\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x12\x36\n\x0cRegistration\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x12\x30\n\x06GenKey\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x12\x31\n\x07NewFile\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x12\x33\n\tGetUpdate\x12\x10.central.Request\x1a\x12.central.Response2\"\x00\x42\x30\n\x18io.grpc.examples.centralB\x0c\x43\x65ntralProtoP\x01\xa2\x02\x03\x43NTb\x06proto3'
 )
 
 
@@ -212,7 +212,7 @@ _CENTRAL = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=172,
-  serialized_end=337,
+  serialized_end=441,
   methods=[
   _descriptor.MethodDescriptor(
     name='GiveFS',
@@ -238,6 +238,26 @@ _CENTRAL = _descriptor.ServiceDescriptor(
     name='GenKey',
     full_name='central.Central.GenKey',
     index=2,
+    containing_service=None,
+    input_type=_REQUEST,
+    output_type=_RESPONSE2,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='NewFile',
+    full_name='central.Central.NewFile',
+    index=3,
+    containing_service=None,
+    input_type=_REQUEST,
+    output_type=_RESPONSE2,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetUpdate',
+    full_name='central.Central.GetUpdate',
+    index=4,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE2,

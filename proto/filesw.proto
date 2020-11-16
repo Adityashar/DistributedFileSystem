@@ -15,7 +15,7 @@ service FileServer {
     rpc CAT (Request) returns (Response) {};
     rpc CP (Request) returns (Response) {};
     rpc PWD (Request) returns (Response) {};
-    rpc NEW (CPReq) returns (Response) {};
+    rpc NEW (Request) returns (Response) {};
     rpc ShareKey (CPReq) returns (Response) {};
 }
 

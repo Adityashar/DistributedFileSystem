@@ -19,6 +19,8 @@ service Central {
     rpc GiveFS (Request) returns (Response2) {}
     rpc Registration (Request) returns (Response2) {}
     rpc GenKey (Request) returns (Response2) {}
+    rpc NewFile (Request) returns (Response2) {}
+    rpc GetUpdate (Request) returns (Response2) {}
 }
 
 // S1 REQUEST - a string for a client

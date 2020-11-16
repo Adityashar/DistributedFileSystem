@@ -36,6 +36,16 @@ class CentralStub(object):
                 request_serializer=central__pb2.Request.SerializeToString,
                 response_deserializer=central__pb2.Response2.FromString,
                 )
+        self.NewFile = channel.unary_unary(
+                '/central.Central/NewFile',
+                request_serializer=central__pb2.Request.SerializeToString,
+                response_deserializer=central__pb2.Response2.FromString,
+                )
+        self.GetUpdate = channel.unary_unary(
+                '/central.Central/GetUpdate',
+                request_serializer=central__pb2.Request.SerializeToString,
+                response_deserializer=central__pb2.Response2.FromString,
+                )
 
 
 class CentralServicer(object):
@@ -66,6 +76,18 @@ class CentralServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def NewFile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetUpdate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_CentralServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -81,6 +103,16 @@ def add_CentralServicer_to_server(servicer, server):
             ),
             'GenKey': grpc.unary_unary_rpc_method_handler(
                     servicer.GenKey,
+                    request_deserializer=central__pb2.Request.FromString,
+                    response_serializer=central__pb2.Response2.SerializeToString,
+            ),
+            'NewFile': grpc.unary_unary_rpc_method_handler(
+                    servicer.NewFile,
+                    request_deserializer=central__pb2.Request.FromString,
+                    response_serializer=central__pb2.Response2.SerializeToString,
+            ),
+            'GetUpdate': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetUpdate,
                     request_deserializer=central__pb2.Request.FromString,
                     response_serializer=central__pb2.Response2.SerializeToString,
             ),
@@ -147,6 +179,40 @@ class Central(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/central.Central/GenKey',
+            central__pb2.Request.SerializeToString,
+            central__pb2.Response2.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def NewFile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/central.Central/NewFile',
+            central__pb2.Request.SerializeToString,
+            central__pb2.Response2.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetUpdate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/central.Central/GetUpdate',
             central__pb2.Request.SerializeToString,
             central__pb2.Response2.FromString,
             options, channel_credentials,

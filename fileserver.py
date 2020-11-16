@@ -63,6 +63,8 @@ class FileServer(filepb_grpc.FileServerServicer):
             plaintext += l + " "
             # f = Pb.file.add()
             # f.n = l
+        if len(plaintext) > 0:
+            plaintext = plaintext[:-1]
         ciphertext = fernet.encrypt(plaintext.encode()).decode()
         return filepb.Response(name = ciphertext)
     
@@ -95,15 +97,30 @@ class FileServer(filepb_grpc.FileServerServicer):
     def PWD(self, request, context):   
         fernet = Fernet(self.session[1].encode())
         self.sessionCount += 1
+
         print("   {}) PWD request from Client with PID {}.".format(self.sessionCount, self.session[0]))
         ciphertext = fernet.encrypt((self.directory).encode()).decode()
         return filepb.Response(name = ciphertext)
     
     def NEW(self, request, context):
         self.sessionCount += 1
-        print("   {}) NEW request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        fernet = Fernet(self.session[1].encode())
+        plaintext = fernet.decrypt(request.name.encode()).decode()
+
+        fer = Fernet(self.kdcKey)
+        ciphertext = fer.encrypt((plaintext + " " + self.session[0]).encode()).decode()
+        msg = "FS" + self.port + " " + ciphertext
         
-        return filepb.Response(name = "Added File/Folder")
+        channel = grpc.insecure_channel('localhost:50051')
+        stub = central_grpc.CentralStub(channel)
+        stub.NewFile(centralpb.Request(name = msg))
+
+        content = "File has been created by client with PID " + self.session[0]
+        with open(os.path.join(self.directory, plaintext), 'w') as f:
+            f.write(content)
+        print("   {}) NEW request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        ciphertext = fernet.encrypt((content).encode()).decode()
+        return filepb.Response(name = ciphertext)
     
 
 def serve(port, directory, Key):

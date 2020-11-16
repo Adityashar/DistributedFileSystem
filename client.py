@@ -95,8 +95,11 @@ def doTask(task, serverName, id, shared_key):
         print("\nThe directory is as follows: ", plaintext)
 
     elif task == 'new':
-        print("Added")
-        response = ""
+        filename = input("Please Enter the File name: ")
+        ciphertext = fernet.encrypt((filename).encode()).decode()
+        response = stub.NEW(filepb.Request(name = ciphertext))
+        plaintext = fernet.decrypt(response.name.encode()).decode()
+        print("\nThe Contents of the new file are: \n\n", plaintext)        
 
     else:
         response = "The service requested does not exist !"
@@ -165,6 +168,23 @@ def getSharedKey(cur_serv, kdcKey, pid):
         print("Connection failed to establish.")
         exit()
 
+def checkCenter(key, pid):
+    fernet = Fernet(key.encode())
+    channel = grpc.insecure_channel('localhost:50051')
+    stub = central_grpc.CentralStub(channel)
+
+    response = stub.GetUpdate(centralpb.Request(name = pid))
+    plaintext = fernet.decrypt(response.name.encode()).decode()
+    if len(plaintext) == 0:
+        return 
+    
+    print("The following files have been added : FileName[FileServer]\n")
+    plaintext = plaintext.split()
+    for i,p in enumerate(plaintext):
+        print (i, ") ", p)
+    return    
+
+
 if __name__ == '__main__':
     logging.basicConfig()
     print('The Client is functioning now.')
@@ -193,7 +213,8 @@ if __name__ == '__main__':
             doTask(cur_task, servers[cur_serv], id, shared_key)
         else:
             print("Wrong input.")
-            
+
+        checkCenter(client_kdc)
         print("\nSelect another service. (N for none)  :  ", end = "")
         cur_task = (input()).lower()
 
@@ -203,6 +224,7 @@ if __name__ == '__main__':
             if cont == 'n':
                 stop = 1
             else:
+                print("Session over with {}.\n".format(cur_serv))
                 cur_serv = selectServer(serverNum)
                 shared_key = getSharedKey(servers[cur_serv], client_kdc, id)
                 print("\nEnter the type of Service :", end = "  ")
