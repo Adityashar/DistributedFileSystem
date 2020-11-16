@@ -19,7 +19,7 @@ class FileServerStub(object):
         self.LS = channel.unary_unary(
                 '/file.FileServer/LS',
                 request_serializer=filesw__pb2.Request.SerializeToString,
-                response_deserializer=filesw__pb2.Files.FromString,
+                response_deserializer=filesw__pb2.Response.FromString,
                 )
         self.CAT = channel.unary_unary(
                 '/file.FileServer/CAT',
@@ -28,7 +28,7 @@ class FileServerStub(object):
                 )
         self.CP = channel.unary_unary(
                 '/file.FileServer/CP',
-                request_serializer=filesw__pb2.CPReq.SerializeToString,
+                request_serializer=filesw__pb2.Request.SerializeToString,
                 response_deserializer=filesw__pb2.Response.FromString,
                 )
         self.PWD = channel.unary_unary(
@@ -38,6 +38,11 @@ class FileServerStub(object):
                 )
         self.NEW = channel.unary_unary(
                 '/file.FileServer/NEW',
+                request_serializer=filesw__pb2.CPReq.SerializeToString,
+                response_deserializer=filesw__pb2.Response.FromString,
+                )
+        self.ShareKey = channel.unary_unary(
+                '/file.FileServer/ShareKey',
                 request_serializer=filesw__pb2.CPReq.SerializeToString,
                 response_deserializer=filesw__pb2.Response.FromString,
                 )
@@ -78,13 +83,19 @@ class FileServerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ShareKey(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FileServerServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'LS': grpc.unary_unary_rpc_method_handler(
                     servicer.LS,
                     request_deserializer=filesw__pb2.Request.FromString,
-                    response_serializer=filesw__pb2.Files.SerializeToString,
+                    response_serializer=filesw__pb2.Response.SerializeToString,
             ),
             'CAT': grpc.unary_unary_rpc_method_handler(
                     servicer.CAT,
@@ -93,7 +104,7 @@ def add_FileServerServicer_to_server(servicer, server):
             ),
             'CP': grpc.unary_unary_rpc_method_handler(
                     servicer.CP,
-                    request_deserializer=filesw__pb2.CPReq.FromString,
+                    request_deserializer=filesw__pb2.Request.FromString,
                     response_serializer=filesw__pb2.Response.SerializeToString,
             ),
             'PWD': grpc.unary_unary_rpc_method_handler(
@@ -103,6 +114,11 @@ def add_FileServerServicer_to_server(servicer, server):
             ),
             'NEW': grpc.unary_unary_rpc_method_handler(
                     servicer.NEW,
+                    request_deserializer=filesw__pb2.CPReq.FromString,
+                    response_serializer=filesw__pb2.Response.SerializeToString,
+            ),
+            'ShareKey': grpc.unary_unary_rpc_method_handler(
+                    servicer.ShareKey,
                     request_deserializer=filesw__pb2.CPReq.FromString,
                     response_serializer=filesw__pb2.Response.SerializeToString,
             ),
@@ -131,7 +147,7 @@ class FileServer(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/file.FileServer/LS',
             filesw__pb2.Request.SerializeToString,
-            filesw__pb2.Files.FromString,
+            filesw__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -164,7 +180,7 @@ class FileServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/file.FileServer/CP',
-            filesw__pb2.CPReq.SerializeToString,
+            filesw__pb2.Request.SerializeToString,
             filesw__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -198,6 +214,23 @@ class FileServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/file.FileServer/NEW',
+            filesw__pb2.CPReq.SerializeToString,
+            filesw__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ShareKey(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/file.FileServer/ShareKey',
             filesw__pb2.CPReq.SerializeToString,
             filesw__pb2.Response.FromString,
             options, channel_credentials,

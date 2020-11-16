@@ -75,11 +75,26 @@ class Central(central_grpc.CentralServicer):
         # serialized response with respect to the proto
     
     def GenKey(self, request, context):
+        """
+        pid, nonce, FS
+        response encrypted by kdc_key : nonce, FS, shared_key, ticket((shared_key + pid) encrypted by FS_KDC)
+        """
         items = request.name.split()
-        pid, nonce, fs = items
+        pid, fs, nonce = items
 
-        kdc_key = self.client_keys[pid]
-        shared_key = Fernet.generate_key()
+        kdc_client_key = self.client_keys[pid]
+        kdc_fs_key = self.fs_keys[fs]
+        shared_key = Fernet.generate_key().decode()         
+        
+        ticket = shared_key + " " + pid
+        ticketCipher = self.Encrypt(ticket, 0, fs).decode() 
+
+        plaintext = nonce + " " + fs + " " + shared_key + " " + ticketCipher
+        ciphertext = self.Encrypt(plaintext, 1, pid).decode()
+
+        print("\nReceived a Session Establishment Request from client with pid {} for FileServer {}.\nSent a Ticket and generated a Session-Key for the same.\n".format(pid, fs))
+
+        return centralpb.Response2(name = ciphertext)
 
 
 def serve():

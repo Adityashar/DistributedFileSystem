@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\025io.grpc.examples.fileB\tFileProtoP\001\242\002\003fsw',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0c\x66ilesw.proto\x12\x04\x66ile\"%\n\x05\x43PReq\x12\r\n\x05\x66ile1\x18\x01 \x01(\t\x12\r\n\x05\x66ile2\x18\x02 \x01(\t\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x18\n\x08Response\x12\x0c\n\x04name\x18\x01 \x01(\t\":\n\x05\x46iles\x12\x1e\n\x04\x66ile\x18\x01 \x03(\x0b\x32\x10.file.Files.name\x1a\x11\n\x04name\x12\t\n\x01n\x18\x01 \x01(\t2\xcb\x01\n\nFileServer\x12\"\n\x02LS\x12\r.file.Request\x1a\x0b.file.Files\"\x00\x12&\n\x03\x43\x41T\x12\r.file.Request\x1a\x0e.file.Response\"\x00\x12#\n\x02\x43P\x12\x0b.file.CPReq\x1a\x0e.file.Response\"\x00\x12&\n\x03PWD\x12\r.file.Request\x1a\x0e.file.Response\"\x00\x12$\n\x03NEW\x12\x0b.file.CPReq\x1a\x0e.file.Response\"\x00\x42*\n\x15io.grpc.examples.fileB\tFileProtoP\x01\xa2\x02\x03\x66swb\x06proto3'
+  serialized_pb=b'\n\x0c\x66ilesw.proto\x12\x04\x66ile\"%\n\x05\x43PReq\x12\r\n\x05\x66ile1\x18\x01 \x01(\t\x12\r\n\x05\x66ile2\x18\x02 \x01(\t\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x18\n\x08Response\x12\x0c\n\x04name\x18\x01 \x01(\t\":\n\x05\x46iles\x12\x1e\n\x04\x66ile\x18\x01 \x03(\x0b\x32\x10.file.Files.name\x1a\x11\n\x04name\x12\t\n\x01n\x18\x01 \x01(\t2\xfb\x01\n\nFileServer\x12%\n\x02LS\x12\r.file.Request\x1a\x0e.file.Response\"\x00\x12&\n\x03\x43\x41T\x12\r.file.Request\x1a\x0e.file.Response\"\x00\x12%\n\x02\x43P\x12\r.file.Request\x1a\x0e.file.Response\"\x00\x12&\n\x03PWD\x12\r.file.Request\x1a\x0e.file.Response\"\x00\x12$\n\x03NEW\x12\x0b.file.CPReq\x1a\x0e.file.Response\"\x00\x12)\n\x08ShareKey\x12\x0b.file.CPReq\x1a\x0e.file.Response\"\x00\x42*\n\x15io.grpc.examples.fileB\tFileProtoP\x01\xa2\x02\x03\x66swb\x06proto3'
 )
 
 
@@ -245,7 +245,7 @@ _FILESERVER = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=173,
-  serialized_end=376,
+  serialized_end=424,
   methods=[
   _descriptor.MethodDescriptor(
     name='LS',
@@ -253,7 +253,7 @@ _FILESERVER = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=_REQUEST,
-    output_type=_FILES,
+    output_type=_RESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
@@ -272,7 +272,7 @@ _FILESERVER = _descriptor.ServiceDescriptor(
     full_name='file.FileServer.CP',
     index=2,
     containing_service=None,
-    input_type=_CPREQ,
+    input_type=_REQUEST,
     output_type=_RESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
@@ -291,6 +291,16 @@ _FILESERVER = _descriptor.ServiceDescriptor(
     name='NEW',
     full_name='file.FileServer.NEW',
     index=4,
+    containing_service=None,
+    input_type=_CPREQ,
+    output_type=_RESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='ShareKey',
+    full_name='file.FileServer.ShareKey',
+    index=5,
     containing_service=None,
     input_type=_CPREQ,
     output_type=_RESPONSE,

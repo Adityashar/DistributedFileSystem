@@ -53,37 +53,46 @@ def centralServer(id, Key = "", nonce = ""):
 
     return servers
     
-def doTask(task, server, id):
-    port, serverName = server
+def doTask(task, serverName, id, shared_key):
+    port = serverName[2:]
     channel = 'localhost:' + port
     channel = grpc.insecure_channel(channel)
     stub = filepb_grpc.FileServerStub(channel)
     id = str(id)
+    fernet = Fernet(shared_key)
 
     if task == 'ls':
-        response = stub.LS(filepb.Request(name = id))
-        print("The Files present in {} are as follows: ".format(serverName))
-        for i, s in enumerate(response.file):
-            print(i + 1, ") " + s.n)
+        response = stub.LS(filepb.Request(name = ""))
+        plaintext = fernet.decrypt(response.name.encode()).decode().split(" ")
+        print("\nThe Files present in {} are as follows: ".format(serverName))
+        for i, s in enumerate(plaintext):
+            print(i + 1, ") " + s)
     
     elif task == 'cat':
         print("Enter the filename: ", end = " ")
         filenme = input()
-        response = stub.CAT(filepb.Request(name = filenme))
-        print("The contents of the given file are: ")
-        print(response.name)
+        ciphertext = fernet.encrypt((filenme).encode()).decode()
+        response = stub.CAT(filepb.Request(name = ciphertext))
+
+        print("\nThe contents of the given file are: \n")
+        plaintext = fernet.decrypt(response.name.encode()).decode()
+        print(plaintext)
 
     elif task == 'cp':
         print("Enter the two file names: ")
-        f1 = input()
-        f2 = input()
+        f1 = input("First File : ")
+        f2 = input("Second File : ")
         print("\nThe Contents of file {} are copied into the file {}.".format(f1, f2))
-        response = stub.CP(filepb.CPReq(file1 = f1, file2 = f2))
-        print("The Request has been processed. The new content of {} is :\n{}".format(f2, response.name))
+
+        ciphertext = fernet.encrypt((f1 + " " + f2).encode()).decode()
+        response = stub.CP(filepb.Request(name = ciphertext))
+        plaintext = fernet.decrypt(response.name.encode()).decode()
+        print("\nThe Request has been processed. The new content of {} is :\n\n{}".format(f2, plaintext))
 
     elif task == 'pwd':
-        response = stub.PWD(filepb.Request(name = "")).name
-        print("The directory is as follows: ", response)
+        response = stub.PWD(filepb.Request(name = ""))
+        plaintext = fernet.decrypt(response.name.encode()).decode()
+        print("\nThe directory is as follows: ", plaintext)
 
     elif task == 'new':
         print("Added")
@@ -114,12 +123,47 @@ def registration(id, key):
     centralServer(ciphertext, key, nonce)
 
 def getSharedKey(cur_serv, kdcKey, pid):
+    """
+    pid, server, nonce
+    nonce, fs, shared_key, ticket
+    (ticket) = decoded ciphertext encrypted by kdcFS key - (session_key + pid)
+    make a rpc req to FS with two messages - (nonce)sharedkey.decode() and ticketcipher 
+    Response encrypted by session_key - nonce-1 
+    """
     nonce = generate_nonce()
     msg = str(pid) + " " + cur_serv + " " + nonce
 
     channel = grpc.insecure_channel('localhost:50051')
     stub = central_grpc.CentralStub(channel)
-    response = stub.
+    response = stub.GenKey(centralpb.Request(name = msg)).name.encode()
+
+    print("\nSent a request to the KDC for a ticket to establish session between the client with pid {} and File Server {}.".format(pid, cur_serv))
+
+    fernet = Fernet(kdcKey.encode())
+    plaintext = fernet.decrypt(response).decode()
+    _, _, shared_key, ticketCipher = plaintext.split(" ")
+
+    shared_key = shared_key.encode()
+    fernet = Fernet(shared_key)
+    plaintext = nonce
+    ciphertext = fernet.encrypt(plaintext.encode()).decode()
+
+    print("Session Key and Ticket received.\nSent RPC request to FS with an encrypted nonce and Ticket")
+
+    port = cur_serv[2:]
+    channel = 'localhost:' + port
+    channel = grpc.insecure_channel(channel)
+    stub = filepb_grpc.FileServerStub(channel)
+    response = stub.ShareKey(filepb.CPReq(file1 = ciphertext, file2 = ticketCipher)).name.encode()
+
+    plaintext = fernet.decrypt(response).decode()
+
+    if int(plaintext) + 1 == int(nonce):
+        print("Session has been established between client with pid {} and file server {}.\n".format(pid, cur_serv))
+        return shared_key
+    else:
+        print("Connection failed to establish.")
+        exit()
 
 if __name__ == '__main__':
     logging.basicConfig()
@@ -133,32 +177,36 @@ if __name__ == '__main__':
     servers = centralServer(id, client_kdc)
     serverNum = len(servers)
     cur_serv = selectServer(serverNum)     
-    shared_key = getSharedKey(servers[cur_serv], client_kdc, id)
+    shared_key = getSharedKey(servers[cur_serv], client_kdc, id)    # Bytes type
     
-    # print("\nThe File Server selected is {}. Please select the RPC service for the same !\n".format(servers[cur_serv][1]))
-    # print("1. ls - list files in given FS\n2. cp - copy content of one file to another\n3. cat - Display contents of given file\n4. pwd - show current directory\n5. new - add a new file")
-    # print()
+    print("\nThe File Server selected is {}. Please select the RPC service for the same !\n".format(servers[cur_serv]))
+    print("1. ls - list files in given FS\n2. cp - copy content of one file to another\n3. cat - Display contents of given file\n4. pwd - show current directory\n5. new - add a new file")
+    print()
 
-    # Task = ['ls', 'cp', 'cat', 'pwd']
-    # cur_task = (input()).lower()
-    # stop = 0
+    Task = ['ls', 'cp', 'cat', 'pwd']
+    cur_task = (input()).lower()
+    stop = 0
 
-    # while stop != 1:
+    while stop != 1:
 
-    #     doTask(cur_task, servers[cur_serv], id)
+        if cur_task in Task:
+            doTask(cur_task, servers[cur_serv], id, shared_key)
+        else:
+            print("Wrong input.")
+            
+        print("\nSelect another service. (N for none)  :  ", end = "")
+        cur_task = (input()).lower()
 
-    #     print("Select another service. (N for none)  :")
-    #     cur_task = (input()).lower()
-
-    #     if cur_task == "n":
-    #         print("Do you want to change the File Server?(y / N)", end = "  ")
-    #         cont = (input()).lower()
-    #         if cont == 'n':
-    #             stop = 1
-    #         else:
-    #             cur_serv = selectServer(serverNum)
-    #             print("Enter the type of Service: ", end = "   ")
-    #             cur_task = (input()).lower()
+        if cur_task == "n":
+            print("\nDo you want to change the File Server?(y / N)", end = "  ")
+            cont = (input()).lower()
+            if cont == 'n':
+                stop = 1
+            else:
+                cur_serv = selectServer(serverNum)
+                shared_key = getSharedKey(servers[cur_serv], client_kdc, id)
+                print("\nEnter the type of Service :", end = "  ")
+                cur_task = (input("LS / CAT / CP / PWD ::  ")).lower()
 
 
 

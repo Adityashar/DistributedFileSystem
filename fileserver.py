@@ -11,54 +11,105 @@ import pb.central_pb2 as centralpb
 import pb.central_pb2_grpc as central_grpc
 
 class FileServer(filepb_grpc.FileServerServicer):
-    def __init__(self, port, directory):
+    def __init__(self, port, directory, key):
         self.clientCount = 0
+        self.sessionCount = 0
         self.folderCount = 0
         self.fileCount = 0
         self.port = port
         self.currentClient = ""
         self.directory = directory
+        self.sessionKeys = {}
+        self.kdcKey = key
+        self.session = ("", "")
+
+    def ShareKey(self, request, context):
+        Ticket = request.file2.encode()
+        fernet = Fernet(self.kdcKey)
+
+        plaintext = fernet.decrypt(Ticket).decode().split()
+        shared_key, pid = plaintext
+        self.clientCount += 1
+
+        if self.session != ("", ""):
+            print("Session over!\n")
+            self.session = ("", "")
+
+
+        print("\n{} )Received a session key from client pid {} with a nonce.".format(self.clientCount, pid))
+
+        shared_key = shared_key.encode()
+        self.sessionKeys[pid] = shared_key
+
+        self.session = (pid, shared_key.decode())
+        self.sessionCount = 0
+
+        fernet = Fernet(shared_key)
+        plaintext = str(int(fernet.decrypt(request.file1.encode()).decode()) - 1)
+        ciphertext = fernet.encrypt(plaintext.encode()).decode()
+
+        print("   Sent a nonce to the client for authentication.\n   Connection has been established!\n")
+
+        return filepb.Response(name = ciphertext)
 
     def LS(self, request, context):   
-        self.clientCount += 1
+        fernet = Fernet(self.session[1].encode())
+        self.sessionCount += 1
         List = os.listdir(self.directory)
-        Pb = filepb.Files()
+        print("   {}) LS request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        # Pb = filepb.Files()
+        plaintext = ""
         for l in List:
-            f = Pb.file.add()
-            f.n = l
-        return Pb
+            plaintext += l + " "
+            # f = Pb.file.add()
+            # f.n = l
+        ciphertext = fernet.encrypt(plaintext.encode()).decode()
+        return filepb.Response(name = ciphertext)
     
-    def CP(self, request, context):
-        self.clientCount += 1
-        with open(os.path.join(self.directory, request.file1), 'r') as f:
+    def CP(self, request, context):   
+        fernet = Fernet(self.session[1].encode())
+        file1, file2 = fernet.decrypt(request.name.encode()).decode().split(" ")
+        self.sessionCount += 1
+        print("   {}) CP request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        with open(os.path.join(self.directory, file1), 'r') as f:
             content = f.read()
-        with open(os.path.join(self.directory, request.file2), 'a') as f:
+        with open(os.path.join(self.directory, file2), 'a') as f:
             f.write("\n" + content)
-        with open(os.path.join(self.directory, request.file2), 'r') as f:
+        with open(os.path.join(self.directory, file2), 'r') as f:
             content = f.read()
 
+        content = fernet.encrypt((content).encode()).decode()
         return filepb.Response(name = content)
     
-    def CAT(self, request, context):
-        self.clientCount += 1
-        with open(os.path.join(self.directory, request.name), 'r') as f:
+    def CAT(self, request, context):   
+        fernet = Fernet(self.session[1].encode())
+        self.sessionCount += 1
+        print("   {}) CAT request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        plaintext = fernet.decrypt(request.name.encode()).decode()
+        with open(os.path.join(self.directory, plaintext), 'r') as f:
             content = f.read()
-        return filepb.Response(name = content)
+
+        ciphertext = fernet.encrypt((content).encode()).decode()
+        return filepb.Response(name = ciphertext)
     
-    def PWD(self, request, context):
-        self.clientCount += 1
-        return filepb.Response(name = self.directory)
+    def PWD(self, request, context):   
+        fernet = Fernet(self.session[1].encode())
+        self.sessionCount += 1
+        print("   {}) PWD request from Client with PID {}.".format(self.sessionCount, self.session[0]))
+        ciphertext = fernet.encrypt((self.directory).encode()).decode()
+        return filepb.Response(name = ciphertext)
     
     def NEW(self, request, context):
-        self.clientCount += 1
+        self.sessionCount += 1
+        print("   {}) NEW request from Client with PID {}.".format(self.sessionCount, self.session[0]))
         
         return filepb.Response(name = "Added File/Folder")
     
 
-def serve(port, directory):
+def serve(port, directory, Key):
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    filepb_grpc.add_FileServerServicer_to_server(FileServer(port, directory), server)
+    filepb_grpc.add_FileServerServicer_to_server(FileServer(port, directory, Key.encode()), server)
 
     insecure_port = '[::]:' + port
     server.add_insecure_port(insecure_port)
@@ -126,4 +177,4 @@ if __name__ == '__main__':
 
     key = Fernet.generate_key().decode()
     Register(port, key)
-    serve(port, directory)
+    serve(port, directory, key)

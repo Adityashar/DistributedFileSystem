@@ -11,11 +11,12 @@ package file;
 // python3 -m grpc_tools.protoc --proto_path=./proto --python_out=./pb --grpc_python_out=./pb ./proto/central.proto
 
 service FileServer {
-    rpc LS (Request) returns (Files) {};
+    rpc LS (Request) returns (Response) {};
     rpc CAT (Request) returns (Response) {};
-    rpc CP (CPReq) returns (Response) {};
+    rpc CP (Request) returns (Response) {};
     rpc PWD (Request) returns (Response) {};
     rpc NEW (CPReq) returns (Response) {};
+    rpc ShareKey (CPReq) returns (Response) {};
 }
 
 
