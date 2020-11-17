@@ -63,13 +63,15 @@ class Central(central_grpc.CentralServicer):
         # print(items)
         if "FS" in items[0]:
             self.fs_keys[items[0]] = items[2].encode()
-            print("Received a request for Registration by FS with Port {}.\nSent a Response to the FS.\n".format(items[0][2:]))
-            res = self.Encrypt(str(int(items[1])-1), 0, items[0])
+            r = str(int(items[1])-1)
+            print("Received a request for Registration by FS with Port {}.\nSent a Response to the FS: `{}`\n".format(items[0][2:], r))
+            res = self.Encrypt(r, 0, items[0])
         else:
             self.client_keys[items[0]] = items[2].encode()
             self.client_notification[items[0]] = []
-            print("Received a request for Registration by client with PID {}.\nSent a response to the client.\n".format(items[0]))
-            res = self.Encrypt(str(int(items[1])-1), 1, items[0])
+            r = str(int(items[1])-1)
+            print("Received a request for Registration by client with PID {}.\nSent a response to the client: `{}`\n".format(items[0], r))
+            res = self.Encrypt(r, 1, items[0])
         
 
         return centralpb.Response2(name = res.decode())

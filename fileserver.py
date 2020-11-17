@@ -149,7 +149,7 @@ def makedirectory(port, directory):
     if os.path.exists(directory) == False:
         os.mkdir(directory)
 
-    print(directory)
+    # print(directory)
     for i in range(0, 3):
         name = os.path.join(directory, str(i) + ".txt")
         with open(name, 'w') as f:
@@ -178,6 +178,7 @@ def Register(port, shared_key):
     with open('secret.key', 'rb') as f:
         public_key = f.read()
     nonce = generate_nonce()
+    print("`" + nonce + "`")
     plaintext = "FS" + port + " " + str(nonce) + " " + shared_key
     fernet = Fernet(public_key)
     ciphertext = fernet.encrypt(plaintext.encode()).decode()
@@ -195,7 +196,7 @@ if __name__ == '__main__':
     if sys.argv[2] == '1':
         makedirectory(port, directory)
 
-    print("Server started at port ", port, ".\nSent a Registration request to Central Server.")
+    print("Server started at port ", port, ".\nSent a Registration request to Central Server.", end = "")
 
     key = Fernet.generate_key().decode()
     Register(port, key)

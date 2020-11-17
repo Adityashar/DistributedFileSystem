@@ -128,7 +128,7 @@ def registration(id, key):
     plaintext = str(id) + " " + nonce + " " + key 
     ciphertext = f.encrypt(plaintext.encode())
 
-    print("Registration request sent to central server by client!")
+    print("Registration request sent to central server by client: `{}`".format(nonce))
     centralServer(ciphertext, key, nonce)
 
 def getSharedKey(cur_serv, kdcKey, pid):
@@ -139,6 +139,7 @@ def getSharedKey(cur_serv, kdcKey, pid):
     make a rpc req to FS with two messages - (nonce)sharedkey.decode() and ticketcipher 
     Response encrypted by session_key - nonce-1 
     """
+    print("\nNeedham-Schroeder Authentication: \n")
     nonce = generate_nonce()
     msg = str(pid) + " " + cur_serv + " " + nonce
 
@@ -146,7 +147,7 @@ def getSharedKey(cur_serv, kdcKey, pid):
     stub = central_grpc.CentralStub(channel)
     response = stub.GenKey(centralpb.Request(name = msg)).name.encode()
 
-    print("\nSent a request to the KDC for a ticket to establish session between the client with pid {} and File Server {}.".format(pid, cur_serv))
+    print("\nSTEP1: Sent a request to the KDC for a ticket to establish session between the client with pid {} and File Server {}.".format(pid, cur_serv))
 
     fernet = Fernet(kdcKey.encode())
     plaintext = fernet.decrypt(response).decode()
@@ -157,7 +158,7 @@ def getSharedKey(cur_serv, kdcKey, pid):
     plaintext = nonce
     ciphertext = fernet.encrypt(plaintext.encode()).decode()
 
-    print("Session Key and Ticket received.\nSent RPC request to FS with an encrypted nonce and Ticket")
+    print("STEP2: Session Key and Ticket received.\nSTEP3: Sent RPC request to FS with an encrypted nonce `{}` and Ticket.".format(nonce))
 
     port = cur_serv[2:]
     channel = 'localhost:' + port
@@ -168,6 +169,7 @@ def getSharedKey(cur_serv, kdcKey, pid):
     plaintext = fernet.decrypt(response).decode()
 
     if int(plaintext) + 1 == int(nonce):
+        print("STEP4: Received an Ecrypted nonce from FS `{}`.\nSTEP5: Sent the Encrypted nonce to FS.".format(plaintext))
         print("Session has been established between client with pid {} and file server {}.\n".format(pid, cur_serv))
         return shared_key
     else:

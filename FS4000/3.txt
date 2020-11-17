@@ -1,2 +1,4 @@
 
 This is the first line in the text file - /mnt/c/Users/Asus/Documents/SEM VII/DIS/New folder/FS4000/1.txt
+This is the first line in the text file - /mnt/c/Users/Asus/Documents/SEM VII/DIS/New folder/FS4000/2.txt
+This is the first line in the text file - /mnt/c/Users/Asus/Documents/SEM VII/DIS/New folder/FS4000/2.txt
